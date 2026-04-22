@@ -1,6 +1,10 @@
 import type { EditorView } from "@codemirror/view";
+import type { Dispatch, SetStateAction } from "react";
 
-function pushDoc(view: EditorView, setMarkdown: (s: string) => void) {
+/** Alinhado a `React.Dispatch<React.SetStateAction<string>>` do editor. */
+export type SetMarkdownContent = Dispatch<SetStateAction<string>>;
+
+function pushDoc(view: EditorView, setMarkdown: SetMarkdownContent) {
   setMarkdown(view.state.doc.toString());
 }
 
@@ -9,7 +13,7 @@ export function wrapSelection(
   view: EditorView | null,
   open: string,
   close: string,
-  setMarkdown: (s: string) => void,
+  setMarkdown: SetMarkdownContent,
 ): void {
   if (!view) return;
   const { from, to } = view.state.selection.main;
@@ -32,7 +36,7 @@ export function wrapSelection(
 export function insertAtCursor(
   view: EditorView | null,
   snippet: string,
-  setMarkdown: (s: string) => void,
+  setMarkdown: SetMarkdownContent,
 ): void {
   if (!view) {
     setMarkdown((prev) => `${prev}\n\n${snippet}\n`);
@@ -50,7 +54,7 @@ export function insertAtCursor(
 export function insertLinePrefix(
   view: EditorView | null,
   prefix: string,
-  setMarkdown: (s: string) => void,
+  setMarkdown: SetMarkdownContent,
 ): void {
   if (!view) {
     setMarkdown((prev) => `${prev}\n${prefix}`);
@@ -65,7 +69,7 @@ export function insertLinePrefix(
 }
 
 /** Bloco de código (fenced) com o cursor na linha vazia dentro. */
-export function insertCodeFence(view: EditorView | null, setMarkdown: (s: string) => void): void {
+export function insertCodeFence(view: EditorView | null, setMarkdown: SetMarkdownContent): void {
   const insert = "\n```\n\n```\n";
   if (!view) {
     setMarkdown((prev) => `${prev}${insert}`);
@@ -81,7 +85,7 @@ export function insertCodeFence(view: EditorView | null, setMarkdown: (s: string
 }
 
 /** Insere `[](https://)` com o cursor entre `[` e `]` para preencher o texto do link. */
-export function insertLinkTemplate(view: EditorView | null, setMarkdown: (s: string) => void): void {
+export function insertLinkTemplate(view: EditorView | null, setMarkdown: SetMarkdownContent): void {
   const ins = "[](https://)";
   if (!view) {
     setMarkdown((prev) => `${prev}\n${ins}\n`);
@@ -95,6 +99,6 @@ export function insertLinkTemplate(view: EditorView | null, setMarkdown: (s: str
   pushDoc(view, setMarkdown);
 }
 
-export function insertHorizontalRule(view: EditorView | null, setMarkdown: (s: string) => void): void {
+export function insertHorizontalRule(view: EditorView | null, setMarkdown: SetMarkdownContent): void {
   insertAtCursor(view, "\n\n---\n\n", setMarkdown);
 }
