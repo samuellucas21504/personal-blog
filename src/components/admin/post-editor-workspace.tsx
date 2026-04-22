@@ -8,6 +8,14 @@ import { useCallback, useMemo, useRef, useState } from "react";
 
 import { MarkdownPretextArticle } from "@/components/markdown-pretext-article";
 import type { Post, PostStatus } from "@/features/posts/types";
+import {
+  insertAtCursor as insertMdAtCursor,
+  insertCodeFence,
+  insertHorizontalRule,
+  insertLinePrefix,
+  insertLinkTemplate,
+  wrapSelection,
+} from "@/lib/admin/markdown-editor-actions";
 
 export type EditorViewMode = "split" | "editor" | "preview";
 
@@ -37,18 +45,8 @@ export function PostEditorWorkspace({ postId, initialPost }: PostEditorWorkspace
 
   const extensions = useMemo(() => [markdownLang()], []);
 
-  const insertAtCursor = useCallback((snippet: string) => {
-    const view = cmRef.current;
-    if (!view) {
-      setMarkdownContent((prev) => `${prev}\n\n${snippet}\n`);
-      return;
-    }
-    const pos = view.state.selection.main.head;
-    view.dispatch({
-      changes: { from: pos, insert: snippet },
-      selection: { anchor: pos + snippet.length },
-    });
-    setMarkdownContent(view.state.doc.toString());
+  const insertSnippet = useCallback((snippet: string) => {
+    insertMdAtCursor(cmRef.current, snippet, setMarkdownContent);
   }, []);
 
   const handlePickImage = useCallback(() => {
@@ -73,7 +71,7 @@ export function PostEditorWorkspace({ postId, initialPost }: PostEditorWorkspace
           return;
         }
         if (data.url) {
-          insertAtCursor(`\n![](${data.url})\n`);
+          insertSnippet(`\n![](${data.url})\n`);
         }
       } catch {
         setSaveState("err");
@@ -82,7 +80,7 @@ export function PostEditorWorkspace({ postId, initialPost }: PostEditorWorkspace
         setUploading(false);
       }
     },
-    [insertAtCursor],
+    [insertSnippet],
   );
 
   const handleSave = useCallback(async () => {
@@ -253,7 +251,98 @@ export function PostEditorWorkspace({ postId, initialPost }: PostEditorWorkspace
       <div className="editor-workspace-panes">
         {(mode === "editor" || mode === "split") && (
           <section className="editor-pane editor-pane--source" aria-label="Markdown">
-            <header className="editor-pane-header">Conteúdo</header>
+            <header className="editor-pane-header">Conteúdo (Markdown)</header>
+            <div className="editor-md-toolbar" role="toolbar" aria-label="Atalhos de formatação">
+              <span className="editor-md-toolbar-hint">Atalhos:</span>
+              <button
+                type="button"
+                className="editor-md-toolbar-btn"
+                title="Título nível 2 no início da linha"
+                onClick={() => insertLinePrefix(cmRef.current, "## ", setMarkdownContent)}
+              >
+                H2
+              </button>
+              <button
+                type="button"
+                className="editor-md-toolbar-btn"
+                title="Título nível 3 no início da linha"
+                onClick={() => insertLinePrefix(cmRef.current, "### ", setMarkdownContent)}
+              >
+                H3
+              </button>
+              <button
+                type="button"
+                className="editor-md-toolbar-btn"
+                title="Negrito (**)"
+                onClick={() => wrapSelection(cmRef.current, "**", "**", setMarkdownContent)}
+              >
+                Negrito
+              </button>
+              <button
+                type="button"
+                className="editor-md-toolbar-btn"
+                title="Itálico (*)"
+                onClick={() => wrapSelection(cmRef.current, "*", "*", setMarkdownContent)}
+              >
+                Itálico
+              </button>
+              <button
+                type="button"
+                className="editor-md-toolbar-btn"
+                title="Código inline (`)"
+                onClick={() => wrapSelection(cmRef.current, "`", "`", setMarkdownContent)}
+              >
+                Código
+              </button>
+              <button
+                type="button"
+                className="editor-md-toolbar-btn"
+                title="Link [texto](url)"
+                onClick={() => insertLinkTemplate(cmRef.current, setMarkdownContent)}
+              >
+                Link
+              </button>
+              <button
+                type="button"
+                className="editor-md-toolbar-btn"
+                title="Lista com marcadores"
+                onClick={() => insertLinePrefix(cmRef.current, "- ", setMarkdownContent)}
+              >
+                Lista
+              </button>
+              <button
+                type="button"
+                className="editor-md-toolbar-btn"
+                title="Lista numerada"
+                onClick={() => insertLinePrefix(cmRef.current, "1. ", setMarkdownContent)}
+              >
+                1.
+              </button>
+              <button
+                type="button"
+                className="editor-md-toolbar-btn"
+                title="Citação no início da linha"
+                onClick={() => insertLinePrefix(cmRef.current, "> ", setMarkdownContent)}
+              >
+                Citação
+              </button>
+              <button
+                type="button"
+                className="editor-md-toolbar-btn"
+                title="Bloco de código (```)"
+                onClick={() => insertCodeFence(cmRef.current, setMarkdownContent)}
+              >
+                Bloco código
+              </button>
+              <button
+                type="button"
+                className="editor-md-toolbar-btn"
+                title="Linha horizontal"
+                onClick={() => insertHorizontalRule(cmRef.current, setMarkdownContent)}
+              >
+                ---
+              </button>
+            </div>
             <div className="editor-cm-wrap">
               <CodeMirror
                 value={markdownContent}

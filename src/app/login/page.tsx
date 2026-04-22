@@ -1,15 +1,21 @@
 import { GitHubLoginButton } from "@/components/github-login-button";
+import { getPublicSiteUrl } from "@/lib/site-url";
 
 type LoginPageProps = {
   searchParams: Promise<{ error?: string; error_description?: string; next?: string }>;
 };
 
-const errorMessages: Record<string, string> = {
+function oauthCodeMissingMessage(): string {
+  const site = getPublicSiteUrl();
+  const example = site ? `${site}/auth/callback` : "https://seu-dominio.vercel.app/auth/callback";
+  return `O retorno nao trouxe o codigo de autenticacao. No Supabase: Authentication > URL Configuration — defina Site URL para a URL publica do site e inclua em Redirect URLs: ${example} (e localhost em dev, se precisar).`;
+}
+
+const errorMessages: Record<string, string | (() => string)> = {
   oauth_github_disabled:
     "O GitHub nao esta habilitado neste projeto Supabase. No painel: Authentication > Providers > GitHub: ative o provedor e preencha Client ID e Client Secret do OAuth App.",
   oauth_start_failed: "Nao foi possivel iniciar o login com GitHub.",
-  oauth_code_missing:
-    "O retorno nao trouxe o codigo de autenticacao. Confirme em Supabase > Authentication > URL Configuration que esta liberado: http://localhost:3000/auth/callback (e tente de novo pelo botao abaixo).",
+  oauth_code_missing: oauthCodeMissingMessage,
   oauth_exchange_failed:
     "O Supabase nao conseguiu obter seu perfil no GitHub. Confira: Client Secret sem espacos extras; e-mail publico no GitHub ou acesso ao escopo user:email; logs em Supabase > Authentication > Logs.",
   oauth_access_denied: "Login cancelado no GitHub.",
@@ -18,7 +24,9 @@ const errorMessages: Record<string, string> = {
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const { error, error_description: errorDescription, next: nextPath } = await searchParams;
-  const message = error ? errorMessages[error] ?? "Falha ao autenticar." : null;
+  const rawMessage = error ? errorMessages[error] : null;
+  const message =
+    typeof rawMessage === "function" ? rawMessage() : rawMessage ? rawMessage : error ? "Falha ao autenticar." : null;
 
   return (
     <main className="container">

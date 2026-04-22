@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { getPublicSiteUrl } from "@/lib/site-url";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 type GitHubLoginButtonProps = {
@@ -17,7 +18,7 @@ export function GitHubLoginButton({ nextPath = "/admin" }: GitHubLoginButtonProp
 
   async function handleClick() {
     setLoading(true);
-    const origin = window.location.origin;
+    const origin = getPublicSiteUrl() ?? window.location.origin;
     const next = safeNextPath(nextPath);
     const redirectTo = `${origin}/auth/callback?next=${encodeURIComponent(next)}`;
     const supabase = createSupabaseBrowserClient();

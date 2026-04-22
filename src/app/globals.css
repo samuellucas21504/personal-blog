@@ -747,6 +747,41 @@ a {
   background: #0d0d0d;
 }
 
+.editor-md-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.5rem;
+  padding: 0.45rem 0.65rem;
+  border-bottom: 1px solid #222;
+  background: #0a0a0a;
+}
+
+.editor-md-toolbar-hint {
+  font-size: 0.68rem;
+  color: #6a6a6a;
+  margin-right: 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.editor-md-toolbar-btn {
+  font: inherit;
+  font-size: 0.72rem;
+  padding: 0.28rem 0.55rem;
+  border: 1px solid #333;
+  border-radius: 6px;
+  background: #111;
+  color: #c8c8c8;
+  cursor: pointer;
+}
+
+.editor-md-toolbar-btn:hover {
+  color: var(--foreground);
+  border-color: #444;
+  background: #161616;
+}
+
 .editor-cm-wrap {
   flex: 1;
   min-height: 420px;

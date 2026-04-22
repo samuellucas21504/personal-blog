@@ -23,10 +23,13 @@ export async function POST(request: Request) {
   const bucket = process.env.NEXT_PUBLIC_POST_MEDIA_BUCKET ?? "post-media";
 
   if (!url || !serviceKey) {
+    const missing: string[] = [];
+    if (!url) missing.push("NEXT_PUBLIC_SUPABASE_URL");
+    if (!serviceKey) missing.push("SUPABASE_SERVICE_ROLE_KEY");
     return NextResponse.json(
       {
         error: "Upload não configurado",
-        hint: "Defina SUPABASE_SERVICE_ROLE_KEY e crie o bucket público no Supabase (ex.: post-media).",
+        hint: `Defina na Vercel (ou .env.local): ${missing.join(", ")}. No Supabase: Settings → API → service_role. Storage: bucket público (nome em NEXT_PUBLIC_POST_MEDIA_BUCKET ou post-media).`,
       },
       { status: 503 },
     );
